@@ -1,1 +1,162 @@
+package com.demos.crud.data.models;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
+@Entity
+@Table(name = "people")
+public class Person {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+
+    @Column(name = "id")
+    public Long id;
+
+    @Column(name = "name")
+    public String name;
+
+    @Column(name = "role")
+    public String role;
+
+    public Person() {}
+
+    public Person(long id, String name, String role) {
+
+        this.id = id;
+        this.name = name;
+        this.role = role;
+    }
+
+    @Override
+    public String toString() {
+
+        StringBuilder builder = new StringBuilder();
+
+        builder.append(String.valueOf(id));
+        builder.append(", ");
+        builder.append(name);
+        builder.append(", ");
+        builder.append(role);
+
+        return builder.toString();
+    }
+}
+
+
+
+
+//creating CRUD repository
+package com.demos.crud.data.repositories;
+
+import com.demos.crud.data.models.Person;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface PersonRepository extends CrudRepository<Person, Long> {
+}
+
+
+
+
+//Connection settings for repository
+
+## default connection pool
+spring.datasource.hikari.connectionTimeout=20000
+spring.datasource.hikari.maximumPoolSize=5
+spring.jpa.generate-ddl=false
+
+## PostgreSQL
+spring.datasource.url=jdbc:postgresql://172.17.0.2:5432/postgres
+spring.datasource.username=postgres
+spring.datasource.password=mysecretpassword
+
+# spring.jpa.properties.hibernate.default_schema=techwriting
+spring.datasource.hikari.schema=techwriting
+
+#drop n create table again, good for testing, comment this in production
+spring.jpa.hibernate.ddl-auto=create
+
+
+
+
+        //Creating a service
+package com.demos.crud.data.services;
+
+import java.util.List;
+import com.demos.crud.data.models.Person;
+
+public interface PeopleService {
+    List<Person> findAllPeople();
+    Person findById(long id);
+    Person insert(Person p);
+    boolean delete(long id);
+    boolean update(Person p);
+}
+
+
+
+@Autowired
+private PersonRepository repository;
+
+@Override
+public List<Person> findAllPeople() {
+    return (List<Person>)repository.findAll();
+}
+
+@Override
+public Person insert(Person p) {
+    return repository.save(p);
+}
+
+@Override
+public boolean delete(long id) {
+    try {
+        repository.deleteById(id);
+        return true;
+    } catch (Exception e) {
+        System.out.println(e.getMessage());
+        return false;
+    }
+}
+
+@Override
+public Person findById(long id) {
+    Optional<Person> result = repository.findById(id);
+    if (result.isPresent()) {
+        return result.get();
+    } else {
+        return null;
+    }
+}
+
+@Override
+public boolean update(Person p) {
+    try {
+        repository.save(p);
+        return true;
+    } catch (Exception e) {
+        System.out.println(e.getMessage());
+        return false;
+    }
+}
+
+
+
+
+
+
+
+
+//CRUD OPERATION
+//Postman can be use to test the API.
+//command-line or other tools can also be use to send the requests to the API as well. 
+
+
+//the default end point for java application is http://localhost:8080
+
+// API IS HOSTED AT /api/people/.
